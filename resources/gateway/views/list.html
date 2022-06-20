@@ -1,0 +1,476 @@
+{{template "base" .}} {{define "main"}}
+<script>
+    document.addEventListener('alpine:initializing', () => {
+        Alpine.data('cartons', cartons);
+    });
+</script>
+<div x-data="cartons" class="flex flex-row items-stretch w-full">
+    <div class="w-1/4 bg-gray-100 relative">
+        <div class="from-purple-800 to-purple-500 mb-1 shadow bg-gradient-to-r py-4 px-2">
+            <h1 class="text-white text-3xl">Cargo</h1>
+        </div>
+        <ul>
+            <template x-for="(item, index) in data">
+                <li class="py-1 px-2" @click="selectedEndpoint = item">
+                    <div class="py-1 px-2 bg-white rounded-md shadow hover:shadow-md cursor-pointer">
+                        <span class="float-right inline-block w-2 h-2 mr-2 rounded-full mt-2"
+                            :class="{'bg-green-600': item.status, 'bg-red-600': !item.status}"></span>
+                        <h3 class="font-bold" x-text="item.name"></h3>
+                        <div class="text-sm" x-text="item.credentials.server">...</div>
+                        <div class="text-sm"><span x-text="item.containers.length"></span> Containers</div>
+                    </div>
+                </li>
+            </template>
+        </ul>
+        <button @click="addEndpoint = true"
+            class="absolute bottom-0 right-0 p-0 mb-2 mr-2 w-12 h-12 shadow-md bg-green-600 rounded-full hover:bg-green-700 active:shadow-lg mouse transition ease-in duration-200 focus:outline-none">
+            <svg viewBox="0 0 20 20" enable-background="new 0 0 20 20" class="w-6 h-6 inline-block">
+                <path fill="#FFFFFF" d="M16,10c0,0.553-0.048,1-0.601,1H11v4.399C11,15.951,10.553,16,10,16c-0.553,0-1-0.049-1-0.601V11H4.601
+                                  C4.049,11,4,10.553,4,10c0-0.553,0.049-1,0.601-1H9V4.601C9,4.048,9.447,4,10,4c0.553,0,1,0.048,1,0.601V9h4.399
+                                  C15.952,9,16,9.447,16,10z" />
+            </svg>
+        </button>
+    </div>
+    <div class="relative bg-white shadow-lg w-3/4 flex flex-col">
+        <div class="px-4 py-5">
+            <div class="text-sm leading-6 space-y-4 text-gray-700 sm:text-lg sm:leading-7"
+                x-show="!selectedEndpoint.name">
+                No entries found
+            </div>
+            <div class="text-sm leading-6 space-y-4 text-gray-700 sm:text-lg sm:leading-7"
+                x-show="selectedEndpoint.name">
+                <div class="flex justify-between items-center">
+                    <h3 class="sub-title" x-text="selectedEndpoint.name"></h3>
+                    <div>
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                            class="h-6 w-6 text-gray-500 inline-block align-bottom hover:text-purple-500 hover:scale-110"
+                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                            class="h-6 w-6 inline-block text-gray-500 align-bottom hover:text-purple-500 hover:scale-110"
+                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                    </div>
+                </div>
+                <hr />
+                <div class="flex justify-between items-center mt-4 mb-4">
+                    <div>
+                        <h4 class="text-gray-600 text-sm">Server</h4>
+                        <span class="mt-2 text-gray-800" x-text="selectedEndpoint.credentials.server">127.27.4.1</span>
+                    </div>
+                    <div>
+                        <h4 class="text-gray-600 text-sm">Agent</h4>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-600" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M5.636 18.364a9 9 0 010-12.728m12.728 0a9 9 0 010 12.728m-9.9-2.829a5 5 0 010-7.07m7.072 0a5 5 0 010 7.07M13 12a1 1 0 11-2 0 1 1 0 012 0z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h4 class="text-gray-600 text-sm">Restarts</h4>
+                        <span class="mt-2 text-gray-800">35</span>
+                    </div>
+                </div>
+                <div class="flex flex-row justify-between">
+                    <h4 class="font-semibold">Containers</h4>
+                    <button @click="addContainer = true"
+                        class="py-2 px-4 shadow-md no-underline rounded bg-green-600 text-white font-semibold text-sm border-green-200 btn-primary hover:text-white hover:bg-green-700 focus:outline-none active:shadow-none">Add
+                        new</button>
+                </div>
+                <table class="min-w-max w-full table-auto">
+                    <thead>
+                        <tr class="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
+                            <th class="py-3 px-6 text-left">Registry</th>
+                            <th class="py-3 px-6 text-left">Image</th>
+                            <th class="py-3 px-6 text-left">Status</th>
+                            <th class="py-3 px-6 text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-gray-600 text-sm font-light">
+                        <template x-for="container in selectedEndpoint.containers">
+                            <tr class="border-b border-gray-200 hover:bg-gray-100">
+                                <td class="py-3 px-6 text-left whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <span class="font-medium" x-text="container.registry"></span>
+                                    </div>
+                                </td>
+                                <td class="py-3 px-6 text-left" x-text="container.image"></td>
+                                <td class="py-3 px-6 text-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-600" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M5.636 18.364a9 9 0 010-12.728m12.728 0a9 9 0 010 12.728m-9.9-2.829a5 5 0 010-7.07m7.072 0a5 5 0 010 7.07M13 12a1 1 0 11-2 0 1 1 0 012 0z" />
+                                    </svg>
+                                </td>
+                                <td class="py-3 px-6 text-center cursor-pointer">
+                                    <div class="flex item-center justify-center">
+                                        <div class="w-4 mr-2 transform hover:text-purple-500 hover:scale-110">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                            </svg>
+                                        </div>
+                                        <div class="w-4 mr-2 transform hover:text-purple-500 hover:scale-110">
+                                            <a href="javascript:;;" @click="editContainer(container)">
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                    stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                                </svg>
+                                            </a>
+                                        </div>
+                                        <div class="w-4 mr-2 transform hover:text-purple-500 hover:scale-110">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
+                                        </div>
+                                        <div class="w-4 mr-2 transform hover:text-purple-500 hover:scale-110">
+                                            <a href="javascript:;;"
+                                                @click="await startContainer(selectedEndpoint, container)"><svg
+                                                    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                    stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                </svg> </a>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320" class="self-end mt-auto">
+            <path fill="#8858f2" fill-opacity="1"
+                d="M0,224L30,197.3C60,171,120,117,180,101.3C240,85,300,107,360,138.7C420,171,480,213,540,240C600,267,660,277,720,256C780,235,840,181,900,181.3C960,181,1020,235,1080,266.7C1140,299,1200,309,1260,277.3C1320,245,1380,171,1410,133.3L1440,96L1440,320L1410,320C1380,320,1320,320,1260,320C1200,320,1140,320,1080,320C1020,320,960,320,900,320C840,320,780,320,720,320C660,320,600,320,540,320C480,320,420,320,360,320C300,320,240,320,180,320C120,320,60,320,30,320L0,320Z">
+            </path>
+        </svg>
+    </div>
+    <div class="overflow-auto" x-show="addEndpoint" :class="{ 'absolute inset-0 z-10 bg-opacity-50': addEndpoint }">
+        <form action="#" method="POST">
+            <div class="min-h-screen bg-white flex flex-col shadow w-3/4 float-right animated fadeInUp">
+                <div>
+                    <div class="px-4 py-5">
+                        <h3 class="sub-title">Add Endpoint</h3>
+                    </div>
+                    <hr />
+                </div>
+                <div>
+
+                    <div class="px-4 py-4 bg-white space-y-2">
+                        <div>
+                            <label for="csp" class="block text-sm font-medium text-gray-700">
+                                Cloud Provider
+                            </label>
+                            <div class="mt-1 flex">
+                                <select name="csp" x-model="newEndpoint.csp">
+                                    <option>--Select--</option>
+                                    <option value="azure">Azure</option>
+                                    <option value="aws">AWS</option>
+                                    <option>GCP</option>
+                                    <option value="onprem">On-Prem</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="inline-flex items-center">
+                                <input type="radio" class="form-radio" name="server-type" value="existing" selected>
+                                <span class="ml-2">Existing</span>
+                            </label>
+                            <label class="inline-flex items-center ml-6">
+                                <input type="radio" class="form-radio" name="server-type" value="new">
+                                <span class="ml-2">New</span>
+                            </label>
+                        </div>
+                        <div>
+                            <label for="name" class="block text-sm font-medium text-gray-700">
+                                Name
+                            </label>
+                            <div class="mt-1 flex shadow-sm">
+                                <input required x-model="newEndpoint.name" type="text" name="name" id="name"
+                                    class="focus:ring-indigo-500 focus:border-indigo-500 block w-full rounded-md sm:text-sm border-gray-300"
+                                    placeholder="127.0.0.1">
+                            </div>
+                        </div>
+                        <h4 class="mb-1 border-b font-semibold">Web</h4>
+                        <div>
+                            <label for="csp" class="block text-sm font-medium text-gray-700">
+                                Instance type
+                            </label>
+                            <div class="mt-1 flex">
+                                <select name="csp" x-model="newEndpoint.web.type" required>
+                                    <option>--Select--</option>
+                                    <option value="azure.paas.appservice" x-show="newEndpoint.csp =='azure'">Azure App
+                                        Service</option>
+                                    <option value="azure.iaas.vm" x-show="newEndpoint.csp =='azure'">Azure IaaS</option>
+                                    <option x-show="newEndpoint.csp =='aws'" value="aws.paas.beanstalk">AWS Beanstalk
+                                    </option>
+                                    <option x-show="newEndpoint.csp =='aws'" value="aws.iaas.ec2">EC2 Instance</option>
+                                    <option x-show="newEndpoint.csp =='onprem'">Virtual Machine</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="px-4 py-3 bg-gray-50 text-right sm:px-6 self-end w-full mt-auto"
+                            x-show="(newEndpoint.web.type || '').indexOf('iaas') == -1">
+                            <button @click="selectedEndpoint = {...newEndpoint};addContainer=true" type="button" class="ml-5 mr-2 bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2
+                                        focus:ring-indigo-500">
+                                Add
+                            </button>
+                        </div>
+                        <div x-show="(newEndpoint.web.type || '').indexOf('iaas') > -1">
+                            <label for="server" class="block text-sm font-medium text-gray-700">
+                                Server
+                            </label>
+                            <div class="mt-1 flex shadow-sm">
+                                <input required x-model="newEndpoint.server" type="text" name="server" id="server"
+                                    class="focus:ring-indigo-500 focus:border-indigo-500 block w-full rounded-md sm:text-sm border-gray-300"
+                                    placeholder="127.0.0.1">
+                            </div>
+                        </div>
+                        <div class="pb-2" x-show="(newEndpoint.web.type || '').indexOf('iaas') > -1">
+                            <h4 class="text-gray-600 mb-1 font-semibold border-b">Credentials</h4>
+                            <div class="w-full">
+                                <label for="username" class="block text-sm text-gray-700">User name</label>
+                                <input type="text" x-model="newEndpoint.web.username" required name="username"
+                                    id="username"
+                                    class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                            </div>
+                            <div class="mt-2 text-gray-700">
+                                <div>
+                                    <label class="inline-flex items-center">
+                                        <input x-model="newEndpoint.web.credentialType" type="radio" class="form-radio"
+                                            name="accountType" value="password">
+                                        <span class="ml-2">Password</span>
+                                    </label>
+                                    <label class="inline-flex items-center ml-6">
+                                        <input x-model="newEndpoint.web.credentialType" type="radio" class="form-radio"
+                                            name="accountType" value="key">
+                                        <span class="ml-2">Private Key</span>
+                                    </label>
+                                </div>
+                                <div class="mt-1">
+                                    <div class="w-full">
+                                        <input x-model="newEndpoint.web.password"
+                                            x-show="newEndpoint.web.credentialType =='password'" type="password"
+                                            name="password" id="password"
+                                            class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                                        <textarea x-model="newEndpoint.web.key"
+                                            x-show="newEndpoint.web.credentialType =='key'" rows="3" name="key" id="key"
+                                            class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pb-2" x-show="(newEndpoint.web.type || '').indexOf('iaas') === -1">
+                            <h4 class="text-gray-600 mb-1">Configuration Parameters</h4>
+                            <div class="w-full">
+                                <label for="web.params" class="block text-sm text-gray-700">Parameters</label>
+                                <input type="text" x-model="newEndpoint.web.params" required name="web.params"
+                                    id="web.params"
+                                    class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                            </div>
+                        </div>
+                        <h4 class="mb-1 border-b font-semibold">Database</h4>
+                        <div class="pb-2">
+                            <label for="csp" class="block text-sm font-medium text-gray-700">
+                                Type
+                            </label>
+                            <div class="mt-1 flex">
+                                <select name="csp" x-model="newEndpoint.db.type" required>
+                                    <option>--Select--</option>
+                                    <option value="postgres">Postgres</option>
+                                    <option value="mysql">MySQL</option>
+                                    <option value="mssql">SQL Server</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="pb-2">
+                            <h4 class="text-gray-600 mb-1 font-semibold border-b">Database details</h4>
+                            <div class="mt-2 text-gray-700">
+                                <div class="w-full">
+                                    <label for="dbName" class="block text-sm text-gray-700">Database name</label>
+                                    <input type="text" x-model="newEndpoint.db.name" required name="dbName"
+                                        id="dbName"
+                                        class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                                </div>
+                            </div>
+                            <div class="w-full">
+                                <label for="dbusername" class="block text-sm text-gray-700">User name</label>
+                                <input type="text" x-model="newEndpoint.db.username" required name="dbusername"
+                                    id="username"
+                                    class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                            </div>
+                            <div class="mt-1 w-full">
+                                <label for="dbpassword" class="block text-sm text-gray-700">Password</label>
+                                <input x-model="newEndpoint.db.password" type="password" name="dbpassword"
+                                    id="dbpassword"
+                                    class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                            </div>
+                        </div>
+                        <div class="pb-2">
+                            <h4 class="text-gray-600 mb-1">Configuration Parameters</h4>
+                            <div class="w-full">
+                                <label for="db.params" class="block text-sm text-gray-700">Parameters</label>
+                                <input type="text" x-model="newEndpoint.db.params" required name="db.params"
+                                    id="db.params"
+                                    class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="px-4 py-3 bg-gray-50 text-right sm:px-6 self-end w-full mt-auto">
+                    <button @click="addEndpoint = false" type="button"
+                        class="ml-5 mr-2 bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        Cancel
+                    </button>
+                    <button type="submit" @click.prevent="saveEndpoint"
+                        class="inline-flex py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                        Save
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="overflow-auto" x-show="addContainer" :class="{ 'absolute inset-0 z-10 bg-opacity-50': addContainer }">
+        <form action="#" method="POST">
+            <div class="min-h-screen bg-white flex flex-col shadow w-3/4 float-right animated fadeInUp">
+                <div>
+                    <div class="px-4 py-5">
+                        <h3 class="sub-title" x-text="`Add container on ${selectedEndpoint.name}`">Add Container</h3>
+                    </div>
+                    <hr />
+                </div>
+                <div>
+                    <div class="px-4 py-4 bg-white space-y-2">
+                        <div class="flex">
+                            <div class="w-1/2 pr-1">
+                                <label for="registry" class="block text-sm font-medium text-gray-700">
+                                    Registry
+                                </label>
+                                <div class="mt-1 flex shadow-sm">
+                                    <input required x-model="newContainer.registry" type="text" id="registry"
+                                        class="focus:ring-indigo-500 focus:border-indigo-500 block w-full rounded-md sm:text-sm border-gray-300"
+                                        placeholder="hub.docker.io">
+                                </div>
+                            </div>
+                            <div class="w-1/2 pl-1">
+                                <label for="image" class="block text-sm font-medium text-gray-700">
+                                    Image
+                                </label>
+                                <div class="mt-1 flex shadow-sm">
+                                    <input required x-model="newContainer.image" type="text" name="image" id="image"
+                                        class="focus:ring-indigo-500 focus:border-indigo-500 block w-full rounded-md sm:text-sm border-gray-300"
+                                        placeholder="nginx:latest">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="pb-2">
+                            <h4 class="text-gray-600 mb-1 font-semibold border-b">Registry Credentials</h4>
+                            <div class="flex">
+                                <div class="w-1/2 pr-1">
+                                    <label for="registryUsername" class="block text-sm text-gray-700">User name</label>
+                                    <input type="text" x-model="newContainer.username" required name="registryUsername"
+                                        id="registryUsername"
+                                        class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                                </div>
+                                <div class="text-gray-700 w-1/2 pl-1">
+                                    <label for="registryPassword" class="block text-sm text-gray-700">Password</label>
+                                    <input x-model="newContainer.password" type="password" name="registryPassword"
+                                        id="registryPassword" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block
+                                w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex">
+                            <div class="w-1/2 pr-1">
+                                <label for="port" class="block text-sm font-medium text-gray-700">
+                                    Port mapping (host:container)
+                                </label>
+                                <div class="mt-1 flex shadow-sm">
+                                    <input required x-model="newContainer.port" type="text" id="port"
+                                        class="focus:ring-indigo-500 focus:border-indigo-500 block w-full rounded-md sm:text-sm border-gray-300"
+                                        placeholder="8080:80">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="space-y-2 px-4 py-4">
+                            <h4 class="text-gray-600 mb-1 font-semibold border-b">env
+                                <button @click.prevent="pushEnv"
+                                    class="p-0 mb-2 ml-2 w-6 h-6 shadow-md bg-green-600 rounded-full hover:bg-green-700 active:shadow-lg mouse transition ease-in duration-200 focus:outline-none">
+                                    <svg viewBox="0 5 20 20" enable-background="new 0 0 20 20"
+                                        class="w-4 h-4 inline-block">
+                                        <path fill="#FFFFFF" d="M16,10c0,0.553-0.048,1-0.601,1H11v4.399C11,15.951,10.553,16,10,16c-0.553,0-1-0.049-1-0.601V11H4.601
+                                                          C4.049,11,4,10.553,4,10c0-0.553,0.049-1,0.601-1H9V4.601C9,4.048,9.447,4,10,4c0.553,0,1,0.048,1,0.601V9h4.399
+                                                          C15.952,9,16,9.447,16,10z" />
+                                    </svg>
+                                </button>
+                            </h4>
+                            <table class="min-w-max w-full table-auto">
+                                <thead>
+                                    <tr class="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
+                                        <th class="py-3 px-6 text-left">Key</th>
+                                        <th class="py-3 px-6 text-left">value</th>
+                                        <th class="py-3 px-6 text-center">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="text-gray-600 text-sm font-light">
+                                    <template x-for="env in newContainer.env">
+                                        <tr class="border-b border-gray-200 hover:bg-gray-100">
+                                            <td class="py-3 px-6 text-left whitespace-nowrap">
+                                                <input type="text" x-model="env.key" class="w-full rounded" />
+                                            </td>
+                                            <td class="py-3 px-6 text-left">
+                                                <input type="text" x-model="env.value" class="w-full rounded" />
+                                            </td>
+                                            <td class="py-3 px-6 text-center">
+                                                <div class="flex item-center justify-center">
+                                                    <div
+                                                        class="w-4 mr-2 transform hover:text-purple-500 hover:scale-110">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                            viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                stroke-width="2"
+                                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                        </svg>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="px-4 py-3 bg-gray-50 text-right sm:px-6 self-end w-full mt-auto">
+                    <button @click="addContainer=false" type="button" class="ml-5 mr-2 bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2
+                                focus:ring-indigo-500">
+                        Cancel
+                    </button>
+                    <button type="submit" @click.prevent="saveContainers" class="inline-flex py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2
+                                focus:ring-green-500">
+                        Save
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{{end}}

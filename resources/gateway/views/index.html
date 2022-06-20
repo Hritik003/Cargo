@@ -1,0 +1,40 @@
+{{define "base"}}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cargo</title>
+    <link rel="stylesheet" href="./public/sailor.css" type="text/css" />
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="./public/cargo.js"></script>
+</head>
+
+<body>
+    <div class="min-h-screen bg-gray-100 items-stretch flex">
+        {{template "main" .}}
+    </div>
+    <div class="mt-4 px-2 py-2 bg-gray-100 shadow-lg rounded border-l-4 w-80 right-1 absolute bottom-2 z-10 animate-bounce" :class=" success ? 'border-green-500' : 'border-red-500'" x-show="show" x-data="toast" @toast.window="showToast($event.detail)">
+        <div class="text-gray-700" x-text="message">
+        </div>
+    </div>
+    <script>
+        function toast() {
+            return {
+                show: false,
+                success: true,
+                message: '',
+                showToast(payload) {
+                    this.show = true;
+                    this.success = payload.success;
+                    this.message = payload.message || (payload.success ? 'Operation completed successfully' : 'An unknown error has occurred');
+                    setTimeout(() => this.show = false, 2000);
+                }
+            };
+        }
+    </script>
+</body>
+
+</html>
+{{end}}
